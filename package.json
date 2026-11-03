@@ -15,7 +15,7 @@
     "generate:photos": "tsx scripts/generatePhotos.ts",
     "generate:static": "tsx scripts/generateStaticData.ts",
     "optimize:originals": "node scripts/optimize-originals.mjs",
-    "build": "npm run thumbs && npm run generate:photos && npm run generate:static && tsc -b && vite build",
+    "build": "npm run thumbs && npm run generate:photos && npm run generate:static && tsc -b && vite build && node scripts/copy-blog-entry.mjs",
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
     "lint:fix": "eslint . --ext .js,.jsx,.ts,.tsx --fix",
     "preview": "vite preview",

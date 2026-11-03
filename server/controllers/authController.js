@@ -1,4 +1,5 @@
 import { runtimeConfig } from "../config/runtime.js";
+import { clearLoginFailures, recordLoginFailure } from "../middleware/loginRateLimit.js";
 import {
   authConfigErrorMessage,
   createJwtToken,
@@ -17,6 +18,7 @@ export function login(req, res) {
   const { username, password } = req.body ?? {};
 
   if (!validateAdminCredentials(username, password)) {
+    recordLoginFailure(req);
     return res.status(401).json({
       ok: false,
       error: "Invalid credentials",
@@ -24,6 +26,7 @@ export function login(req, res) {
   }
 
   res.set("Cache-Control", "no-store");
+  clearLoginFailures(req);
 
   return res.json({
     ok: true,

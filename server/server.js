@@ -4,8 +4,8 @@ import { isAuthConfigured } from "./services/authService.js";
 
 const app = createApp();
 
-app.listen(runtimeConfig.port, () => {
-  console.log(`Content server ${runtimeConfig.port} portunda calisiyor`);
+app.listen(runtimeConfig.port, runtimeConfig.host, () => {
+  console.log(`Content server ${runtimeConfig.host}:${runtimeConfig.port} portunda calisiyor`);
 
   if (!isAuthConfigured()) {
     console.warn(

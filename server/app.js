@@ -8,6 +8,7 @@ import uploadRoutes from "./routes/uploadRoutes.js";
 
 export function createApp() {
   const app = express();
+  app.set("trust proxy", runtimeConfig.trustProxyHops);
 
   app.use(
     cors({

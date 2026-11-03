@@ -1,33 +1,22 @@
-import path from "path";
-import {
-  processUploadedFile,
-  resolveCategoryDir,
-} from "../services/uploadService.js";
+import path from "node:path";
+import { saveUploadedImage, UploadValidationError } from "../services/uploadService.js";
 
 export async function uploadImage(req, res) {
-  if (!req.file) {
-    return res.status(400).json({
-      ok: false,
-      error: "No file received",
-    });
-  }
-
-  const { cat } = resolveCategoryDir(req.body.category);
-  const filename = req.file.filename;
-  const src = `/${cat}/${filename}`;
-
+  if (!req.file) return res.status(400).json({ ok: false, error: "No file received" });
   try {
-    await processUploadedFile(req.file.path, req.file.mimetype, cat);
-    console.log("File uploaded and optimized:", req.file.path);
+    const saved = await saveUploadedImage(req.file, req.body.category, req.body.name);
+    return res.json({
+      ok: true,
+      file: { filename: saved.filename, size: saved.size },
+      src: saved.src,
+      category: saved.category,
+      nameNormalized: path.parse(saved.filename).name,
+    });
   } catch (error) {
-    console.warn("Post-upload optimization failed:", error?.message || error);
+    if (error instanceof UploadValidationError) {
+      return res.status(400).json({ ok: false, error: error.message });
+    }
+    console.error("Upload failed:", error);
+    return res.status(500).json({ ok: false, error: "Upload failed" });
   }
-
-  return res.json({
-    ok: true,
-    file: req.file,
-    src,
-    category: cat,
-    nameNormalized: path.parse(filename).name,
-  });
 }

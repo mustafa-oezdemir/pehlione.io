@@ -27,10 +27,13 @@ jobs:
             - name: Install dependencies
               run: npm ci
 
+            - name: Audit production dependencies
+              run: npm audit --omit=dev
+
             - name: Run build
               run: npm run build
 
-            - name: Run unit tests (placeholder)
+            - name: Run backend security tests
               run: npm test
 
             # E2E tests are handled in .github/workflows/e2e.yml

@@ -22,7 +22,7 @@
     "predeploy": "npm run build",
     "deploy": "gh-pages -d dist",
     "typecheck": "tsc -b",
-    "test": "echo \"No unit tests specified; see test:e2e for E2E\" && exit 0",
+    "test": "node --test server/tests/*.test.js",
     "thumbs": "node scripts/gen-thumbs.mjs",
     "test:e2e": "node scripts/run-playwright.mjs test --project=chromium --project=firefox",
     "test:e2e:webkit": "node scripts/run-playwright.mjs test --project=webkit",

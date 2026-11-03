@@ -38,7 +38,7 @@ export async function createCollectionEntry(resource, payload) {
 
   const entry = {
     ...payload,
-    id: payload.id ? String(payload.id) : nextId(items),
+    id: nextId(items),
   };
 
   items.push(entry);

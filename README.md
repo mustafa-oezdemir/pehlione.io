@@ -93,9 +93,9 @@ npm run server
 Neue Inhalte werden über ein kurzes JWT geschützt. Benutzername und Passwort werden nur gegen `/auth/login` geprüft; Uploads und neue Einträge verwenden danach `Bearer`‑Token. Lege dazu eine `.env` im Projektwurzel an:
 
 ```bash
-ADMIN_USERNAME=admin
-ADMIN_PASSWORD=change-me
-JWT_SECRET=replace-with-a-long-random-secret
+ADMIN_USERNAME=your-unique-admin-name
+ADMIN_PASSWORD=your-long-random-password
+JWT_SECRET=your-long-random-signing-secret
 JWT_TTL_SECONDS=900
 # optional
 CLIENT_ORIGIN=http://localhost:5173
@@ -108,6 +108,9 @@ CLIENT_ORIGIN=http://localhost:5173
 - `JWT_SECRET`: Signierschlüssel für kurzlebige JWTs.
 - `JWT_TTL_SECONDS`: Lebensdauer eines JWTs in Sekunden.
 - `CLIENT_ORIGIN`: erlaubte Frontend‑Origin für lokale Entwicklung.
+- `API_HOST`: Bind-Adresse des Content-Servers (Standard `127.0.0.1`, nur lokal erreichbar).
+- `PORT`: Port des Content-Servers (Standard `3001`).
+- `TRUST_PROXY_HOPS`: Anzahl vertrauenswürdiger Reverse-Proxy-Hops (Standard `0`). Nur setzen, wenn der Proxy eingehende `X-Forwarded-For`-Header zuverlässig ersetzt; die Login-Sperre verwendet dann die Client-IP.
 - `VITE_API_BASE_URL`: optionaler Read/Write‑API‑Pfad für das Frontend.
 - `VITE_UPLOAD_API_BASE_URL`: optionaler Upload‑Pfad für das Frontend.
 

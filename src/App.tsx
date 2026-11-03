@@ -1,12 +1,13 @@
 
-import { useEffect, useMemo, useState, useCallback } from 'react'
+import { lazy, Suspense, useEffect, useMemo, useState, useCallback } from 'react'
 import './App.css'
 import Header from './components/Header'
 import Footer from './components/Footer'
 import CV from './components/Sections/CV'
 import Hobbies from './components/Sections/Hobbies'
 import Foto from './page/Foto'
-import Blog from './page/Blog'
+import BlogPostForm from './components/BlogPostForm'
+import { findBlogPost } from './lib/blogPosts'
 import Certificates from './components/Sections/Certificates'
 import Projects from './components/Sections/Projects'
 import Repos from './components/Sections/Repos'
@@ -14,6 +15,8 @@ import DeveloperInfo from './components/Sections/DeveloperInfo'
 import Box from '@mui/material/Box'
 import AgentDoc from './components/Lebenslauf'
 import Button from '@mui/material/Button'
+import Tab from '@mui/material/Tab'
+import Tabs from '@mui/material/Tabs'
 import { UploadForm } from '@/components/UploadForm'
 import AdminLoginForm from '@/components/AdminLoginForm'
 import { githubUsername } from '@/constants/github'
@@ -22,6 +25,8 @@ import { githubUsername } from '@/constants/github'
 type MainView = 'default' | 'agentDoc' | 'hobbies' | 'certificates' | 'projects' | 'repos' | 'developer' | 'foto' | 'blog' | 'login' | 'upload'
 type FotoCategory = 'gartenarbeit' | 'fotografie' | null
 type AdminSession = { accessToken: string; tokenExpiresAt: number | null }
+
+const Blog = lazy(() => import('./page/Blog'))
 
 const seoDefaults = {
   title: 'Mustafa Ozdemir | Junior Anwendungsentwickler, Software Developer & Software Entwickler',
@@ -41,6 +46,8 @@ function App() {
   const [ drawerOpen, setDrawerOpen ] = useState( false )
   const [ mainView, setMainView ] = useState<MainView>( 'default' )
   const [ fotoCategory, setFotoCategory ] = useState<FotoCategory>( null )
+  const [ blogSlug, setBlogSlug ] = useState<string | null>( null )
+  const [ adminEditor, setAdminEditor ] = useState<'media' | 'blog'>( 'media' )
   const [ pendingHash, setPendingHash ] = useState<string | null>( null )
   const [ adminSession, setAdminSession ] = useState<AdminSession>( {
     accessToken: '',
@@ -60,12 +67,12 @@ function App() {
   const resolveRoute = useCallback( (
     pathname: string,
     search = ''
-  ): { view: MainView; category: FotoCategory } => {
+  ): { view: MainView; category: FotoCategory; blogSlug?: string | null } => {
     const withoutBase = basePath && pathname.startsWith( basePath )
       ? pathname.slice( basePath.length ) || '/'
       : pathname
     const clean = withoutBase.split( '?' )[ 0 ].split( '#' )[ 0 ]
-    const [ segment, sub ] = clean.replace( /^\/+/, '' ).split( '/' )
+    const [ segment, sub, third ] = clean.replace( /^\/+/, '' ).split( '/' )
     const legacyUploadQuery = new URLSearchParams( search ).has( 'upload' )
 
     if ( legacyUploadQuery ) return { view: 'login' as const, category: null }
@@ -76,7 +83,9 @@ function App() {
     if ( segment === 'projects' ) return { view: 'projects' as const, category: null }
     if ( segment === 'repos' || segment === 'repositories' ) return { view: 'repos' as const, category: null }
     if ( segment === 'developer' ) return { view: 'developer' as const, category: null }
-    if ( segment === 'blog' && !sub ) return { view: 'blog' as const, category: null }
+    if ( segment === 'blog' && !third && (!sub || /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(sub)) ) {
+      return { view: 'blog' as const, category: null, blogSlug: sub || null }
+    }
     if ( segment === 'login' ) return { view: 'login' as const, category: null }
     if ( segment === 'upload' ) return { view: 'upload' as const, category: null }
     if ( segment === 'foto' ) {
@@ -91,7 +100,7 @@ function App() {
     return { view: 'default' as const, category: null }
   }, [ basePath ] )
 
-  const toPath = useCallback( ( view: MainView, category?: FotoCategory ) => {
+  const toPath = useCallback( ( view: MainView, category?: FotoCategory, slug?: string | null ) => {
     if ( view === 'default' ) return '/'
     if ( view === 'agentDoc' ) return '/cv'
     if ( view === 'hobbies' ) return '/hobby'
@@ -99,16 +108,16 @@ function App() {
     if ( view === 'projects' ) return '/projects'
     if ( view === 'repos' ) return '/repos'
     if ( view === 'developer' ) return '/developer'
-    if ( view === 'blog' ) return '/blog'
+    if ( view === 'blog' ) return slug ? `/blog/${ slug }` : '/blog'
     if ( view === 'login' ) return '/login'
     if ( view === 'upload' ) return '/upload'
     if ( view === 'foto' ) return `/foto/${ category ?? 'gartenarbeit' }`
     return '/'
   }, [] )
 
-  const pushRoute = useCallback( ( view: MainView, category?: FotoCategory, hash?: string ) => {
+  const pushRoute = useCallback( ( view: MainView, category?: FotoCategory, hash?: string, slug?: string | null ) => {
     if ( typeof window === 'undefined' ) return
-    const target = toPath( view, category )
+    const target = toPath( view, category, slug )
     const fullPath = basePath ? `${ basePath }${ target }` : target
     const searchParams = new URLSearchParams( window.location.search )
     searchParams.delete( 'upload' )
@@ -120,10 +129,11 @@ function App() {
     }
   }, [ basePath, toPath ] )
 
-  const navigate = useCallback( ( view: MainView, category?: FotoCategory, hash?: string ) => {
+  const navigate = useCallback( ( view: MainView, category?: FotoCategory, hash?: string, slug?: string | null ) => {
     if ( category !== undefined ) setFotoCategory( category )
+    setBlogSlug( view === 'blog' ? slug ?? null : null )
     setMainView( view )
-    pushRoute( view, category, hash )
+    pushRoute( view, category, hash, slug )
     if ( hash !== undefined ) setPendingHash( hash )
   }, [ pushRoute ] )
 
@@ -134,15 +144,17 @@ function App() {
       sessionStorage.removeItem( 'spa-redirect' )
       window.history.replaceState( {}, '', pending )
     }
-    const { view, category } = resolveRoute(
+    const { view, category, blogSlug: routeBlogSlug } = resolveRoute(
       window.location.pathname,
       window.location.search
     )
     setMainView( view )
+    setBlogSlug( routeBlogSlug ?? null )
     if ( category ) setFotoCategory( category )
     const onPop = () => {
       const next = resolveRoute( window.location.pathname, window.location.search )
       setMainView( next.view )
+      setBlogSlug( next.blogSlug ?? null )
       setFotoCategory( next.category )
     }
     window.addEventListener( 'popstate', onPop )
@@ -200,7 +212,7 @@ function App() {
   useEffect(() => {
     if (typeof window === 'undefined') return
 
-    const path = toPath(mainView, fotoCategory)
+    const path = toPath(mainView, fotoCategory, blogSlug)
     const absoluteUrl = new URL(path, 'https://pehlione.com').toString()
     const routeSeo: Record<Exclude<MainView, 'foto'>, typeof seoDefaults> = {
       default: seoDefaults,
@@ -284,7 +296,12 @@ function App() {
             keywords: 'Gartenarbeit Portfolio Mustafa Ozdemir Pflanzen',
           }
 
-    const currentSeo = mainView === 'foto' ? fotoSeo : routeSeo[mainView]
+    const post = mainView === 'blog' && blogSlug ? findBlogPost(blogSlug) : null
+    const currentSeo = mainView === 'foto' ? fotoSeo : post ? {
+      title: `${post.title} | Blog | Mustafa Ozdemir`,
+      description: post.summary,
+      keywords: routeSeo.blog.keywords,
+    } : routeSeo[mainView]
 
     document.title = currentSeo.title
     document.documentElement.lang = 'de'
@@ -300,7 +317,7 @@ function App() {
 
     const canonical = document.querySelector<HTMLLinkElement>('link[rel="canonical"]')
     if (canonical) canonical.href = absoluteUrl
-  }, [mainView, fotoCategory, toPath])
+  }, [mainView, fotoCategory, blogSlug, toPath])
   return (
     <div className="app-shell min-h-dvh w-full">
       <a id="home" />
@@ -343,7 +360,7 @@ function App() {
                     </h1>
                     <p className="admin-shell__copy fs-5 mt-4 mb-0">
                   Melde dich mit den Server-Zugangsdaten an, um Bilder,
-                  Zertifikate und weitere Inhalte sicher über JWT-geschützte
+                  Zertifikate und Blogbeiträge sicher über JWT-geschützte
                   Endpunkte zu verwalten.
                     </p>
                     <div className="admin-shell__chips mt-4">
@@ -391,7 +408,7 @@ function App() {
                     </h1>
                     <p className="admin-shell__copy fs-5 mt-4 mb-0">
                   Die aktuelle Sitzung ist aktiv. Du kannst jetzt Bilder hochladen
-                  und neue Zertifikate oder Galerie-Einträge anlegen.
+                  sowie neue Zertifikate, Blogbeiträge oder Galerie-Einträge anlegen.
                     </p>
                     <div className="row g-3 mt-2">
                       <div className="col-12 col-md-4">
@@ -403,7 +420,7 @@ function App() {
                       <div className="col-12 col-md-4">
                         <div className="admin-shell__stat">
                           <p className="admin-shell__stat-label mb-0">Ziel</p>
-                          <p className="admin-shell__stat-value mb-0">Fotos & Zertifikate</p>
+                          <p className="admin-shell__stat-value mb-0">Fotos, Zertifikate & Blog</p>
                         </div>
                       </div>
                       <div className="col-12 col-md-4">
@@ -416,17 +433,40 @@ function App() {
                   </div>
                 </div>
                 <div className="col-12 col-xl-5">
-                  <UploadForm
-                    accessToken={adminSession.accessToken}
-                    tokenExpiresAt={adminSession.tokenExpiresAt}
-                    onSessionExpired={() => {
-                      setAdminSession( { accessToken: '', tokenExpiresAt: null } )
-                      navigate( 'login' )
-                    }}
-                  />
+                  <Tabs
+                    value={adminEditor}
+                    onChange={(_, value: 'media' | 'blog') => setAdminEditor(value)}
+                    variant="fullWidth"
+                    aria-label="Inhaltstyp wählen"
+                    sx={{ mb: 2, '& .MuiTab-root': { color: 'rgba(226, 232, 240, 0.8)' },
+                      '& .MuiTab-root.Mui-selected': { color: '#fff' }, '& .MuiTabs-indicator': { bgcolor: '#38bdf8' } }}
+                  >
+                    <Tab value="media" label="Bilder & Zertifikate" />
+                    <Tab value="blog" label="Blog" />
+                  </Tabs>
+                  {adminEditor === 'blog' ? (
+                    <BlogPostForm
+                      accessToken={adminSession.accessToken}
+                      tokenExpiresAt={adminSession.tokenExpiresAt}
+                      onSessionExpired={() => {
+                        setAdminSession( { accessToken: '', tokenExpiresAt: null } )
+                        navigate( 'login' )
+                      }}
+                    />
+                  ) : (
+                    <UploadForm
+                      accessToken={adminSession.accessToken}
+                      tokenExpiresAt={adminSession.tokenExpiresAt}
+                      onSessionExpired={() => {
+                        setAdminSession( { accessToken: '', tokenExpiresAt: null } )
+                        navigate( 'login' )
+                      }}
+                    />
+                  )}
                   <div className="d-flex flex-wrap justify-content-center gap-3 mt-4">
                     <Button
                       variant="outlined"
+                      sx={{ color: '#e2e8f0', borderColor: 'rgba(148, 163, 184, 0.6)' }}
                       onClick={() => {
                         setAdminSession( { accessToken: '', tokenExpiresAt: null } )
                         navigate( 'login' )
@@ -434,7 +474,7 @@ function App() {
                     >
                       Abmelden
                     </Button>
-                    <Button variant="outlined" onClick={() => navigate('default')}>
+                    <Button variant="outlined" sx={{ color: '#e2e8f0', borderColor: 'rgba(148, 163, 184, 0.6)' }} onClick={() => navigate('default')}>
                     App anzeigen
                     </Button>
                   </div>
@@ -443,7 +483,16 @@ function App() {
             </div>
           </section>
         ) : mainView === "blog" ? (
-          <Blog />
+          <Suspense fallback={null}>
+            <Blog
+              slug={blogSlug}
+              onOpenPost={(slug) => {
+                navigate('blog', undefined, undefined, slug)
+                window.scrollTo(0, 0)
+              }}
+              onBack={() => navigate('blog')}
+            />
+          </Suspense>
         ) : mainView === "agentDoc" ? (
           <section className="w-screen -ml-[65px] -mr-[65px] px-[calc(65px+1rem)] sm:px-[calc(65px+1.5rem)] lg:px-[calc(65px+2.5rem)] py-12">
             <AgentDoc />

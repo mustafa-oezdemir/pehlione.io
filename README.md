@@ -101,6 +101,18 @@ JWT_TTL_SECONDS=900
 CLIENT_ORIGIN=http://localhost:5173
 ```
 
+### Blogbeiträge lokal schreiben
+
+Starte `npm run dev` und öffne `http://localhost:5173/login`. Melde dich mit
+`ADMIN_USERNAME` und `ADMIN_PASSWORD` aus der lokalen `.env` an. Wähle im
+Admin-Bereich den Tab **Blog**, gib Titel, Kurzbeschreibung und Markdown-Inhalt
+ein und speichere den Beitrag. Die Datei entsteht unter `content/blog/`; der
+Beitrag ist lokal unter `/blog/<slug>` sichtbar. Überschriften (`##`, `###`),
+Codeblöcke, Listen und Links werden gerendert. Für die Veröffentlichung auf
+pehlione.com muss die neue Markdown-Datei über einen PR nach `main` gelangen;
+der erfolgreiche Pages-Workflow verteilt sie danach. Der Blog-Schreibzugriff
+ist auf lokale Verbindungen beschränkt.
+
 ## Umgebung
 
 - `BASE_PATH`: Vite‑Basis‑Pfad für Deployments unter Unterpfaden, z. B. `/pehlione.io/`.

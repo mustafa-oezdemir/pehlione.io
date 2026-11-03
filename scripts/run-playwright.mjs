@@ -8,7 +8,10 @@ import process from 'node:process'
 const rootDir = process.cwd()
 const homeCacheDir = path.join(os.homedir(), '.cache', 'ms-playwright')
 const localLibCacheDir = path.join(rootDir, '.cache', 'playwright-libs')
-const npxBin = process.platform === 'win32' ? 'npx.cmd' : 'npx'
+const playwrightCommand = process.platform === 'win32' ? process.execPath : 'npx'
+const playwrightPrefix = process.platform === 'win32'
+  ? [path.join(rootDir, 'node_modules', 'playwright', 'cli.js')]
+  : ['playwright']
 const args = process.argv.slice(2)
 
 function run(command, commandArgs, options = {}) {
@@ -77,7 +80,7 @@ function ensurePlaywrightBrowsers(projects) {
   }
 
   if (missing.length > 0) {
-    run(npxBin, ['playwright', 'install', ...missing], { cwd: rootDir })
+    run(playwrightCommand, [...playwrightPrefix, 'install', ...missing], { cwd: rootDir })
   }
 }
 
@@ -176,7 +179,7 @@ if (process.platform === 'linux') {
   env.LD_LIBRARY_PATH = buildLinuxLibraryPath()
 }
 
-const result = spawnSync(npxBin, ['playwright', ...args], {
+const result = spawnSync(playwrightCommand, [...playwrightPrefix, ...args], {
   cwd: rootDir,
   env,
   stdio: 'inherit',

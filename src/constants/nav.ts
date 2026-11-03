@@ -4,6 +4,7 @@ import WorkspacePremiumIcon from "@mui/icons-material/WorkspacePremium";
 import WorkIcon from "@mui/icons-material/Work";
 import FolderIcon from "@mui/icons-material/Folder";
 import PersonIcon from "@mui/icons-material/Person";
+import ArticleIcon from "@mui/icons-material/Article";
 /* import CloudUploadIcon from '@mui/icons-material/CloudUpload'; */
 
 export const navItems = [
@@ -41,6 +42,13 @@ export const navItems = [
     href: "#repos",
     icon: FolderIcon,
     detail: "Neueste GitHub-Repositories.",
+  },
+  {
+    key: "blog",
+    label: "Blog",
+    href: "/blog",
+    icon: ArticleIcon,
+    detail: "Wissen, Tutorials und Lernnotizen.",
   },
   {
     key: "developer",

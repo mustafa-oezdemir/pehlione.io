@@ -106,7 +106,7 @@ export type Props = {
   onOpen: () => void
   onClose: () => void
   homeHref: string
-  onSelectMain: (view: 'default' | 'agentDoc' | 'hobbies' | 'certificates' | 'projects' | 'repos' | 'developer' | 'login', hash?: string) => void
+  onSelectMain: (view: 'default' | 'agentDoc' | 'hobbies' | 'certificates' | 'projects' | 'repos' | 'developer' | 'blog' | 'login', hash?: string) => void
 }
 
 function Header({ open, onOpen, onClose, homeHref, onSelectMain }: Props) {
@@ -143,11 +143,13 @@ function Header({ open, onOpen, onClose, homeHref, onSelectMain }: Props) {
             >
             pehlione
             </Typography>
-          <Box sx={{ display: { xs: 'none', sm: 'flex' }, gap: 1, ml: 'auto' }}>
+          <Box sx={{ display: { xs: 'none', lg: 'flex' }, gap: 1, ml: 'auto' }}>
             {navItems.map((item) => (
               <Button
                 key={item.key}
-                onClick={() => onSelectMain('default', item.href)}
+                onClick={() => item.key === 'blog'
+                  ? onSelectMain('blog')
+                  : onSelectMain('default', item.href)}
                 size="small"
                 sx={{ color: 'text.primary' }}
               >
@@ -188,6 +190,8 @@ function Header({ open, onOpen, onClose, homeHref, onSelectMain }: Props) {
                     onSelectMain('projects')
                   } else if (item.key === 'repos') {
                     onSelectMain('repos')
+                  } else if (item.key === 'blog') {
+                    onSelectMain('blog')
                   } else if (item.key === 'developer') {
                     onSelectMain('developer')
                   }

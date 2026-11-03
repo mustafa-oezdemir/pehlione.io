@@ -6,6 +6,7 @@ import Footer from './components/Footer'
 import CV from './components/Sections/CV'
 import Hobbies from './components/Sections/Hobbies'
 import Foto from './page/Foto'
+import Blog from './page/Blog'
 import Certificates from './components/Sections/Certificates'
 import Projects from './components/Sections/Projects'
 import Repos from './components/Sections/Repos'
@@ -18,7 +19,7 @@ import AdminLoginForm from '@/components/AdminLoginForm'
 import { githubUsername } from '@/constants/github'
 
 
-type MainView = 'default' | 'agentDoc' | 'hobbies' | 'certificates' | 'projects' | 'repos' | 'developer' | 'foto' | 'login' | 'upload'
+type MainView = 'default' | 'agentDoc' | 'hobbies' | 'certificates' | 'projects' | 'repos' | 'developer' | 'foto' | 'blog' | 'login' | 'upload'
 type FotoCategory = 'gartenarbeit' | 'fotografie' | null
 type AdminSession = { accessToken: string; tokenExpiresAt: number | null }
 
@@ -75,6 +76,7 @@ function App() {
     if ( segment === 'projects' ) return { view: 'projects' as const, category: null }
     if ( segment === 'repos' || segment === 'repositories' ) return { view: 'repos' as const, category: null }
     if ( segment === 'developer' ) return { view: 'developer' as const, category: null }
+    if ( segment === 'blog' && !sub ) return { view: 'blog' as const, category: null }
     if ( segment === 'login' ) return { view: 'login' as const, category: null }
     if ( segment === 'upload' ) return { view: 'upload' as const, category: null }
     if ( segment === 'foto' ) {
@@ -97,6 +99,7 @@ function App() {
     if ( view === 'projects' ) return '/projects'
     if ( view === 'repos' ) return '/repos'
     if ( view === 'developer' ) return '/developer'
+    if ( view === 'blog' ) return '/blog'
     if ( view === 'login' ) return '/login'
     if ( view === 'upload' ) return '/upload'
     if ( view === 'foto' ) return `/foto/${ category ?? 'gartenarbeit' }`
@@ -242,6 +245,13 @@ function App() {
           'Entwicklerprofil von Mustafa Ozdemir mit Schwerpunkten in Java, Java Spring, Golang, C# .NET, TypeScript, React, PHP Laravel, Symfony, Grafana und PRTG.',
         keywords:
           'Entwicklerprofil, Junior Anwendungsentwickler, Software Entwickler, Java Spring, Golang, .NET, React, Laravel, Symfony, Grafana, PRTG',
+      },
+      blog: {
+        title: 'Blog | Mustafa Ozdemir - Softwareentwicklung',
+        description:
+          'Technische Blogbeiträge, Tutorials und persönliche Lernnotizen zu Softwareentwicklung, React, Java und mehr.',
+        keywords:
+          'Softwareentwicklung Blog, React, Java, TypeScript, Tutorials, Programmierung, Lernnotizen',
       },
       login: {
         title: 'Admin Login | Mustafa Ozdemir',
@@ -432,6 +442,8 @@ function App() {
               </div>
             </div>
           </section>
+        ) : mainView === "blog" ? (
+          <Blog />
         ) : mainView === "agentDoc" ? (
           <section className="w-screen -ml-[65px] -mr-[65px] px-[calc(65px+1rem)] sm:px-[calc(65px+1.5rem)] lg:px-[calc(65px+2.5rem)] py-12">
             <AgentDoc />

@@ -1,4 +1,4 @@
-import { Box, Button, Container, Paper, Typography } from '@mui/material'
+import { Box, Button, Container, Pagination, Paper, Typography } from '@mui/material'
 import Markdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { blogPosts, findBlogPost } from '@/lib/blogPosts'
@@ -11,6 +11,18 @@ type Props = {
 
 export default function Blog({ slug, onOpenPost, onBack }: Props) {
   const post = slug ? findBlogPost(slug) : null
+  const requestedPage = Number(new URLSearchParams(window.location.search).get('page'))
+  const page = Number.isSafeInteger(requestedPage) && requestedPage > 0
+    ? Math.min(requestedPage, Math.max(blogPosts.length, 1))
+    : 1
+  const listedPost = blogPosts[page - 1]
+
+  const changePage = (_event: unknown, nextPage: number) => {
+    const url = new URL(window.location.href)
+    if (nextPage === 1) url.searchParams.delete('page')
+    else url.searchParams.set('page', String(nextPage))
+    window.location.assign(url.toString())
+  }
 
   return (
     <Box component="section" sx={{ py: { xs: 4, md: 7 } }}>
@@ -78,15 +90,44 @@ export default function Blog({ slug, onOpenPost, onBack }: Props) {
                     Noch keine Blogbeiträge veröffentlicht. Die ersten Artikel folgen bald.
                   </Typography>
                 </Paper>
-              ) : blogPosts.map((item) => (
-                <Paper key={item.slug} component="article" variant="outlined" sx={{ p: 3, mb: 2, borderRadius: 3 }}>
-                  <Typography component="h3" variant="h6" sx={{ fontWeight: 700 }}>
-                    {item.title}
-                  </Typography>
-                  <Typography color="text.secondary" sx={{ mt: 1, mb: 2 }}>{item.summary}</Typography>
-                  <Button onClick={() => onOpenPost(item.slug)}>Beitrag lesen</Button>
-                </Paper>
-              ))}
+              ) : (
+                <>
+                  <Paper component="article" variant="outlined" sx={{ p: 3, mb: 3, borderRadius: 3 }}>
+                    <Typography component="p" variant="overline" color="primary.main">
+                      {page === 1 ? 'Neuester Beitrag' : 'Älterer Beitrag'}
+                    </Typography>
+                    <Typography component="h3" variant="h6" sx={{ fontWeight: 700 }}>
+                      {listedPost.title}
+                    </Typography>
+                    <Typography color="text.secondary" variant="body2" sx={{ mt: 1 }}>
+                      {new Date(listedPost.date).toLocaleDateString('de-DE')}
+                    </Typography>
+                    <Typography color="text.secondary" sx={{ mt: 2, mb: 2 }}>{listedPost.summary}</Typography>
+                    <Button onClick={() => onOpenPost(listedPost.slug)}>Beitrag lesen</Button>
+                  </Paper>
+                  {blogPosts.length > 1 && (
+                    <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+                      <Pagination
+                        aria-label="Blog-Seiten"
+                        count={blogPosts.length}
+                        page={page}
+                        onChange={changePage}
+                        color="primary"
+                        shape="rounded"
+                        showFirstButton
+                        showLastButton
+                        getItemAriaLabel={(type, number) => {
+                          if (type === 'page') return `Seite ${number}`
+                          if (type === 'first') return 'Erste Seite'
+                          if (type === 'last') return 'Letzte Seite'
+                          if (type === 'next') return 'Nächste Seite'
+                          return 'Vorherige Seite'
+                        }}
+                      />
+                    </Box>
+                  )}
+                </>
+              )}
             </Box>
           </>
         )}

@@ -32,7 +32,7 @@ function parsePost(path: string, source: string): BlogPost | null {
 export const blogPosts = Object.entries(files)
   .map(([path, source]) => parsePost(path, source))
   .filter((post): post is BlogPost => post !== null)
-  .sort((a, b) => b.date.localeCompare(a.date))
+  .sort((a, b) => b.date.localeCompare(a.date) || b.slug.localeCompare(a.slug))
 
 export function findBlogPost(slug: string) {
   return blogPosts.find((post) => post.slug === slug)

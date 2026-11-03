@@ -28,7 +28,7 @@ test.describe('Blog navigation', () => {
   test('opens blog directly and survives reload', async ({ page }) => {
     await page.goto('/blog')
     await expect(page.getByRole('heading', { level: 1, name: 'Blog' })).toBeVisible()
-    await expect(page.getByText('Noch keine Blogbeiträge veröffentlicht.', { exact: false })).toBeVisible()
+    await expect(page.getByRole('heading', { level: 2, name: 'Alle Beiträge' })).toBeVisible()
 
     await page.reload()
     await expect(page).toHaveURL(/\/blog$/)

@@ -7,7 +7,7 @@ import CV from './components/Sections/CV'
 import Hobbies from './components/Sections/Hobbies'
 import Foto from './page/Foto'
 import BlogPostForm from './components/BlogPostForm'
-import { findBlogPost } from './lib/blogPosts'
+import { blogPosts, findBlogPost } from './lib/blogPosts'
 import Certificates from './components/Sections/Certificates'
 import Projects from './components/Sections/Projects'
 import Repos from './components/Sections/Repos'
@@ -121,6 +121,7 @@ function App() {
     const fullPath = basePath ? `${ basePath }${ target }` : target
     const searchParams = new URLSearchParams( window.location.search )
     searchParams.delete( 'upload' )
+    if ( view !== 'blog' ) searchParams.delete( 'page' )
     const search = searchParams.toString()
     const nextHash = view === 'default' && hash !== undefined ? hash : ''
     const nextUrl = `${ fullPath }${ search ? `?${ search }` : '' }${ nextHash }`
@@ -213,7 +214,14 @@ function App() {
     if (typeof window === 'undefined') return
 
     const path = toPath(mainView, fotoCategory, blogSlug)
-    const absoluteUrl = new URL(path, 'https://pehlione.com').toString()
+    const requestedBlogPage = Number(new URLSearchParams(window.location.search).get('page'))
+    const blogPage = mainView === 'blog' && !blogSlug && Number.isSafeInteger(requestedBlogPage)
+      ? Math.min(requestedBlogPage, Math.max(blogPosts.length, 1))
+      : 1
+    const absoluteUrl = new URL(
+      `${path}${blogPage > 1 ? `?page=${blogPage}` : ''}`,
+      'https://pehlione.com',
+    ).toString()
     const routeSeo: Record<Exclude<MainView, 'foto'>, typeof seoDefaults> = {
       default: seoDefaults,
       agentDoc: {

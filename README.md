@@ -107,7 +107,9 @@ Starte `npm run dev` und öffne `http://localhost:5173/login`. Melde dich mit
 `ADMIN_USERNAME` und `ADMIN_PASSWORD` aus der lokalen `.env` an. Wähle im
 Admin-Bereich den Tab **Blog**, gib Titel, Kurzbeschreibung und Markdown-Inhalt
 ein und speichere den Beitrag. Die Datei entsteht unter `content/blog/`; der
-Beitrag ist lokal unter `/blog/<slug>` sichtbar. Überschriften (`##`, `###`),
+Beitrag ist lokal unter `/blog/<slug>` sichtbar. Auf `/blog` erscheint zuerst
+der neueste Beitrag; ältere Beiträge sind über `?page=2`, `?page=3` usw.
+erreichbar. Überschriften (`##`, `###`),
 Codeblöcke, Listen und Links werden gerendert. Für die Veröffentlichung auf
 pehlione.com muss die neue Markdown-Datei über einen PR nach `main` gelangen;
 der erfolgreiche Pages-Workflow verteilt sie danach. Der Blog-Schreibzugriff

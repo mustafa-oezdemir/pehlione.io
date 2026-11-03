@@ -2,6 +2,7 @@ import {
   createCollectionEntry,
   readCollection,
 } from "../services/dbService.js";
+import { validateContentPayload } from "../validation/contentSchemas.js";
 
 export async function listContent(req, res) {
   try {
@@ -25,15 +26,11 @@ export async function listContent(req, res) {
 }
 
 export async function createContent(req, res) {
-  if (!req.body || typeof req.body !== "object" || Array.isArray(req.body)) {
-    return res.status(400).json({
-      ok: false,
-      error: "Invalid payload",
-    });
-  }
+  const validation = validateContentPayload(req.params.resource, req.body);
+  if (validation.error) return res.status(validation.status).json({ ok: false, error: validation.error });
 
   try {
-    const entry = await createCollectionEntry(req.params.resource, req.body);
+    const entry = await createCollectionEntry(req.params.resource, validation.value);
 
     if (!entry) {
       return res.status(404).json({

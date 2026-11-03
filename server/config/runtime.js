@@ -21,6 +21,8 @@ try {
 
 export const runtimeConfig = {
   port: Number(process.env.PORT || 3001),
+  host: process.env.API_HOST || "127.0.0.1",
+  trustProxyHops: Math.min(5, Math.max(0, Number.parseInt(process.env.TRUST_PROXY_HOPS || "0", 10) || 0)),
   clientOrigin: process.env.CLIENT_ORIGIN || "http://localhost:5173",
   githubToken: process.env.IO_TOKEN || "",
   githubUsername:

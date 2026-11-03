@@ -304,7 +304,7 @@ const UploadForm: React.FC<Props> = ({
 
         <TextField
           type="file"
-          inputProps={{ accept: "image/*" }}
+          inputProps={{ accept: "image/jpeg,image/png,image/webp" }}
           onChange={handleFile}
         />
 

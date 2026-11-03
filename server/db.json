@@ -298,6 +298,15 @@
       "category": "foto",
       "sub_category": "natur",
       "id": "19"
+    },
+    {
+      "src": "/foto/Herbstliches-Herzblatt-im-warmen-Licht.png",
+      "name": "Herbstliches Herzblatt im warmen Licht",
+      "title": "Herbstliches Herzblatt im warmen Licht",
+      "description": "Ein leuchtend rotes, herzförmiges Herbstblatt im warmen, goldenen Licht. Die filigranen Blattadern, intensiven Rot- und Orangetöne sowie der sanft verschwommene Hintergrund schaffen eine harmonische, stimmungsvolle Herbstatmosphäre. Ein kunstvolles Naturmotiv, das die Schönheit und Magie des Herbstes eindrucksvoll einfängt.",
+      "category": "foto",
+      "sub_category": "herbst",
+      "id": "20"
     }
   ],
   "certificates": [
@@ -420,6 +429,12 @@
       "name": "SAP Technology Consultant",
       "issuer": "Coursera/SAP",
       "img": "/certificates/sap_consultant.png"
+    },
+    {
+      "name": "Angular for Enterprise Applications",
+      "issuer": "Coursera/Packt",
+      "img": "/certificates/Angular_for_Enterprise_Applications.jpg",
+      "id": "21"
     }
   ],
   "projects": [

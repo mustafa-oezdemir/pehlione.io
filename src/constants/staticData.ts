@@ -179,5 +179,11 @@ export const staticCertificates: (Cert & { id: string })[] = [
     "name": "SAP Technology Consultant",
     "issuer": "Coursera/SAP",
     "img": "/certificates/sap_consultant.png"
+  },
+  {
+    "id": "21",
+    "name": "Angular for Enterprise Applications",
+    "issuer": "Coursera/Packt",
+    "img": "/certificates/Angular_for_Enterprise_Applications.jpg"
   }
 ];

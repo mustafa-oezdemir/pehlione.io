@@ -299,5 +299,14 @@ export const fotografiePhotos: FotoEintrag[] = [
     "description": "Dramatische Wolkenformationen ziehen über den Abendhimmel und werden von warmem orangefarbenem Licht beleuchtet. Die dunkleren Wolkenbereiche bilden einen starken Kontrast zu den leuchtenden Farbtönen des Sonnenuntergangs.",
     "category": "foto",
     "sub_category": "natur"
+  },
+  {
+    "id": "20",
+    "src": "/foto/Herbstliches-Herzblatt-im-warmen-Licht.png",
+    "name": "Herbstliches Herzblatt im warmen Licht",
+    "title": "Herbstliches Herzblatt im warmen Licht",
+    "description": "Ein leuchtend rotes, herzförmiges Herbstblatt im warmen, goldenen Licht. Die filigranen Blattadern, intensiven Rot- und Orangetöne sowie der sanft verschwommene Hintergrund schaffen eine harmonische, stimmungsvolle Herbstatmosphäre. Ein kunstvolles Naturmotiv, das die Schönheit und Magie des Herbstes eindrucksvoll einfängt.",
+    "category": "foto",
+    "sub_category": "herbst"
   }
 ];

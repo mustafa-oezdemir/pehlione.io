@@ -14,7 +14,7 @@ export function createApp() {
   app.use(
     cors({
       origin: runtimeConfig.clientOrigin,
-      methods: ["GET", "POST"],
+      methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
       allowedHeaders: ["Authorization", "Content-Type"],
       exposedHeaders: ["X-Repo-Cache", "X-Repo-Source", "X-Repo-Warning"],
     })

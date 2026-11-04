@@ -7,6 +7,7 @@ import CV from './components/Sections/CV'
 import Hobbies from './components/Sections/Hobbies'
 import Foto from './page/Foto'
 import BlogPostForm from './components/BlogPostForm'
+import AdminContentManager from './components/AdminContentManager'
 import { blogPosts, findBlogPost } from './lib/blogPosts'
 import Certificates from './components/Sections/Certificates'
 import Projects from './components/Sections/Projects'
@@ -47,7 +48,7 @@ function App() {
   const [ mainView, setMainView ] = useState<MainView>( 'default' )
   const [ fotoCategory, setFotoCategory ] = useState<FotoCategory>( null )
   const [ blogSlug, setBlogSlug ] = useState<string | null>( null )
-  const [ adminEditor, setAdminEditor ] = useState<'media' | 'blog'>( 'media' )
+  const [ adminEditor, setAdminEditor ] = useState<'media' | 'blog' | 'manage'>( 'media' )
   const [ pendingHash, setPendingHash ] = useState<string | null>( null )
   const [ adminSession, setAdminSession ] = useState<AdminSession>( {
     accessToken: '',
@@ -406,7 +407,7 @@ function App() {
           <section className="admin-shell d-flex align-items-center min-vh-100 w-100 py-5">
             <div className="container-xl admin-shell__content">
               <div className="row g-5 align-items-center">
-                <div className="col-12 col-xl-7">
+                <div className={adminEditor === 'manage' ? 'col-12' : 'col-12 col-xl-7'}>
                   <div className="pe-xl-4">
                     <span className="admin-shell__eyebrow">
                   Upload Console
@@ -415,8 +416,8 @@ function App() {
                   Neue Inhalte direkt im Admin-Bereich erfassen
                     </h1>
                     <p className="admin-shell__copy fs-5 mt-4 mb-0">
-                  Die aktuelle Sitzung ist aktiv. Du kannst jetzt Bilder hochladen
-                  sowie neue Zertifikate, Blogbeiträge oder Galerie-Einträge anlegen.
+                  Die aktuelle Sitzung ist aktiv. Du kannst Fotos, Zertifikate,
+                  Blogbeiträge, Projekte und technische Schwerpunkte verwalten.
                     </p>
                     <div className="row g-3 mt-2">
                       <div className="col-12 col-md-4">
@@ -428,7 +429,7 @@ function App() {
                       <div className="col-12 col-md-4">
                         <div className="admin-shell__stat">
                           <p className="admin-shell__stat-label mb-0">Ziel</p>
-                          <p className="admin-shell__stat-value mb-0">Fotos, Zertifikate & Blog</p>
+                          <p className="admin-shell__stat-value mb-0">Alle sechs Bereiche</p>
                         </div>
                       </div>
                       <div className="col-12 col-md-4">
@@ -440,10 +441,10 @@ function App() {
                     </div>
                   </div>
                 </div>
-                <div className="col-12 col-xl-5">
+                <div className={adminEditor === 'manage' ? 'col-12' : 'col-12 col-xl-5'}>
                   <Tabs
                     value={adminEditor}
-                    onChange={(_, value: 'media' | 'blog') => setAdminEditor(value)}
+                    onChange={(_, value: 'media' | 'blog' | 'manage') => setAdminEditor(value)}
                     variant="fullWidth"
                     aria-label="Inhaltstyp wählen"
                     sx={{ mb: 2, '& .MuiTab-root': { color: 'rgba(226, 232, 240, 0.8)' },
@@ -451,8 +452,18 @@ function App() {
                   >
                     <Tab value="media" label="Bilder & Zertifikate" />
                     <Tab value="blog" label="Blog" />
+                    <Tab value="manage" label="Verwalten" />
                   </Tabs>
-                  {adminEditor === 'blog' ? (
+                  {adminEditor === 'manage' ? (
+                    <AdminContentManager
+                      accessToken={adminSession.accessToken}
+                      tokenExpiresAt={adminSession.tokenExpiresAt}
+                      onSessionExpired={() => {
+                        setAdminSession( { accessToken: '', tokenExpiresAt: null } )
+                        navigate( 'login' )
+                      }}
+                    />
+                  ) : adminEditor === 'blog' ? (
                     <BlogPostForm
                       accessToken={adminSession.accessToken}
                       tokenExpiresAt={adminSession.tokenExpiresAt}

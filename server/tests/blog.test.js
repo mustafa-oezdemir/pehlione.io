@@ -64,3 +64,33 @@ test('blog post is saved as Markdown with a unique safe slug', async () => {
       rm(path.join(rootDir, 'content', 'blog', `${slug}.md`), { force: true })))
   }
 })
+
+test('blog list, read, update and delete lifecycle', async () => {
+  const response = await post({ title: `CRUD ${Date.now()}`, summary: 'Original', body: 'Original body' })
+  assert.equal(response.status, 201)
+  const { post: created } = await response.json()
+  const url = `${base}/api/blog/${created.slug}`
+  try {
+    const listed = await fetch(`${base}/api/blog`)
+    assert.equal(listed.status, 200)
+    assert.ok((await listed.json()).some((item) => item.slug === created.slug))
+    const read = await fetch(url)
+    assert.equal((await read.json()).body, 'Original body')
+    const unauthorized = await fetch(url, { method: 'DELETE' })
+    assert.equal(unauthorized.status, 401)
+    const updated = await fetch(url, { method: 'PUT',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${createJwtToken()}` },
+      body: JSON.stringify({ title: 'Updated', summary: 'New summary', body: 'Updated body' }),
+    })
+    assert.equal(updated.status, 200)
+    const edited = (await updated.json()).post
+    assert.equal(edited.date, created.date)
+    assert.equal(edited.body, 'Updated body')
+    assert.equal((await fetch(`${base}/api/blog/..%2Funsafe`)).status, 404)
+    const deleted = await fetch(url, { method: 'DELETE', headers: { Authorization: `Bearer ${createJwtToken()}` } })
+    assert.equal(deleted.status, 200)
+    assert.equal((await fetch(url)).status, 404)
+  } finally {
+    await rm(path.join(rootDir, 'content', 'blog', `${created.slug}.md`), { force: true })
+  }
+})

@@ -7,7 +7,7 @@ const __dirname = path.dirname(__filename);
 export const rootDir = path.resolve(__dirname, "..", "..");
 export const serverDir = path.join(rootDir, "server");
 export const publicDir = path.join(rootDir, "public");
-export const dbPath = path.join(serverDir, "db.json");
+export const dbPath = process.env.CONTENT_DB_PATH || path.join(serverDir, "db.json");
 
 const envPath = path.join(rootDir, ".env");
 

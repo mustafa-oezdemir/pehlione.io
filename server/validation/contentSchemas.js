@@ -24,6 +24,10 @@ const schemas = {
   schwerpunkte: { text: { type: "text", max: 500 } },
 };
 
+export function isContentResource(resource) {
+  return Object.hasOwn(schemas, resource);
+}
+
 function isValidUrl(value) {
   try {
     const url = new URL(value);
@@ -33,20 +37,24 @@ function isValidUrl(value) {
   }
 }
 
-export function validateContentPayload(resource, payload) {
+export function validateContentPayload(resource, payload, { partial = false } = {}) {
   const schema = schemas[resource];
   if (!schema) return { status: 404, error: "Unknown resource" };
   if (!payload || typeof payload !== "object" || Array.isArray(payload)) {
     return { status: 400, error: "Invalid payload" };
   }
-  if (Object.keys(payload).some((key) => !Object.hasOwn(schema, key))) {
+  if ((partial && Object.keys(payload).length === 0) || Object.keys(payload).some((key) => !Object.hasOwn(schema, key))) {
     return { status: 400, error: "Unexpected field" };
   }
   const value = {};
   for (const [key, rule] of Object.entries(schema)) {
     const input = payload[key];
+    if (partial && input === undefined) continue;
     if (input === undefined || input === "") {
-      if (rule.optional) continue;
+      if (rule.optional) {
+        if (partial && input === "") value[key] = "";
+        continue;
+      }
       return { status: 400, error: `Invalid ${key}` };
     }
     if (typeof input !== "string" || input.length > rule.max || input.includes("\0")) {
@@ -57,13 +65,13 @@ export function validateContentPayload(resource, payload) {
     if (rule.type === "url" && !isValidUrl(normalized)) return { status: 400, error: `Invalid ${key}` };
     if (rule.type === "asset") {
       const prefix = resource === "certificates" ? "/certificates/" : resource === "gardenPhotos" ? "/garten/" : "/foto/";
-      if (!normalized.startsWith(prefix) || !/^\/[a-z]+\/[a-zA-Z0-9_-]+(?:-[a-f0-9-]{36})?\.(?:jpe?g|png|webp)$/i.test(normalized)) {
+      if (!normalized.startsWith(prefix) || !/^\/[a-z]+\/[\p{L}\p{N}_-]+\.(?:jpe?g|png|webp)$/iu.test(normalized)) {
         return { status: 400, error: `Invalid ${key}` };
       }
     }
     value[key] = normalized;
   }
-  if (resource === "gardenPhotos" && value.category !== "garten") return { status: 400, error: "Invalid category" };
-  if (resource === "fotografiePhotos" && value.category !== "foto") return { status: 400, error: "Invalid category" };
+  if (resource === "gardenPhotos" && value.category !== undefined && !["garten", "foto"].includes(value.category)) return { status: 400, error: "Invalid category" };
+  if (resource === "fotografiePhotos" && value.category !== undefined && value.category !== "foto") return { status: 400, error: "Invalid category" };
   return { value };
 }
